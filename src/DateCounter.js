@@ -1,18 +1,32 @@
-import { useReducer, useState } from "react";
+import { useReducer } from "react";
+
+const initialState = { count: 0, step: 1 };
 
 function reducer(state, action) {
   console.log(state, action);
-  if (action.type === "inc") return state + 1;
-  if (action.type === "dec") return state - 1;
-  if (action.type === "setCount") return action.payload;
+
+  switch (action.type) {
+    case "dec":
+      return { ...state, count: state.count - state.step }; //We spread prev object, and with that we basicaly create new brand object and as a sec count:xxx overwrite the count in that new object we just spreaded!
+    case "inc":
+      return { ...state, count: state.count + state.step };
+    case "setCount":
+      return { ...state, count: action.payload };
+    case "setStep":
+      return { ...state, step: action.payload };
+    case "reset":
+      return initialState;
+    default:
+      throw new Error("Unknown action");
+  }
 }
 
 function DateCounter() {
   // const [count, setCount] = useState(0);
+  // const [step, setStep] = useState(1);
 
-  const [count, dispatch] = useReducer(reducer, 0);
-
-  const [step, setStep] = useState(1);
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const { count, step } = state; //Destuctured from the previous 2useState hooks, from useReducer at this point, simply destructure the state from useReducer into one object that contains count, and step...Basicaly the same we used in the two useState hooks,
 
   // This mutates the date object.
   const date = new Date("june 21 2027");
@@ -20,14 +34,10 @@ function DateCounter() {
 
   const dec = function () {
     dispatch({ type: "dec" });
-    // setCount((count) => count - 1);
-    // setCount((count) => count - step);
   };
 
   const inc = function () {
     dispatch({ type: "inc" });
-    // setCount((count) => count + 1);
-    // setCount((count) => count + step);
   };
 
   const defineCount = function (e) {
@@ -35,12 +45,11 @@ function DateCounter() {
   };
 
   const defineStep = function (e) {
-    setStep(Number(e.target.value));
+    dispatch({ type: "setStep", payload: Number(e.target.value) });
   };
 
   const reset = function () {
-    // setCount(0);
-    setStep(1);
+    dispatch({ type: "reset" });
   };
 
   return (
